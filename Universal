@@ -50,7 +50,7 @@ title.TextXAlignment = Enum.TextXAlignment.Left
 local closeBtn = Instance.new("TextButton", topBar)
 closeBtn.Size = UDim2.fromOffset(36,36)
 closeBtn.Position = UDim2.new(1,-44,0.5,-18)
-closeBtn.Text = "✕"
+closeBtn.Text = "🗙"
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 18
 closeBtn.BackgroundColor3 = Color3.fromRGB(170,60,60)
@@ -152,9 +152,17 @@ local getJump = createSlider("Jump",50,150,50)
 
 local infJumpToggle = createToggle("Infinite Jump")
 local espToggle = createToggle("ESP (Red)")
-local iyBtn = createToggle("Infinite Yield")
+local iyBtn = Instance.new("TextButton", scroll)
+iyBtn.Size = UDim2.new(1,0,0,44)
+iyBtn.BackgroundColor3 = Color3.fromRGB(50,50,150)
+iyBtn.TextColor3 = Color3.new(1,1,1)
+iyBtn.Font = Enum.Font.Gotham
+iyBtn.TextSize = 15
+iyBtn.Text = "Infinite Yield"
+Instance.new("UICorner", iyBtn).CornerRadius = UDim.new(0,14)
+Instance.new("UIStroke", iyBtn).Color = Color3.fromRGB(70,70,70)
 
-local speedOn, jumpOn, infJumpOn, espOn = false,false,false,false
+local speedOn,jumpOn,infJumpOn,espOn = false,false,false,false
 local espObjs = {}
 
 --------------------------------------------------
@@ -171,21 +179,22 @@ end
 
 RunService.RenderStepped:Connect(applySpeedJump)
 
--- SPEED / JUMP TOGGLES
 speedToggle.MouseButton1Click:Connect(function()
 	speedOn = not speedOn
 	speedToggle.Text = "Speed Boost: "..(speedOn and "ON" or "OFF")
+	speedToggle.BackgroundColor3 = speedOn and Color3.fromRGB(50,160,50) or Color3.fromRGB(35,35,35)
 end)
 
 jumpToggle.MouseButton1Click:Connect(function()
 	jumpOn = not jumpOn
 	jumpToggle.Text = "Jump Boost: "..(jumpOn and "ON" or "OFF")
+	jumpToggle.BackgroundColor3 = jumpOn and Color3.fromRGB(50,160,50) or Color3.fromRGB(35,35,35)
 end)
 
--- INFINITE JUMP
 infJumpToggle.MouseButton1Click:Connect(function()
 	infJumpOn = not infJumpOn
 	infJumpToggle.Text = "Infinite Jump: "..(infJumpOn and "ON" or "OFF")
+	infJumpToggle.BackgroundColor3 = infJumpOn and Color3.fromRGB(50,160,50) or Color3.fromRGB(35,35,35)
 end)
 
 UIS.JumpRequest:Connect(function()
@@ -195,10 +204,10 @@ UIS.JumpRequest:Connect(function()
 	end
 end)
 
--- ESP
 espToggle.MouseButton1Click:Connect(function()
 	espOn = not espOn
 	espToggle.Text = "ESP (Red): "..(espOn and "ON" or "OFF")
+	espToggle.BackgroundColor3 = espOn and Color3.fromRGB(50,160,50) or Color3.fromRGB(35,35,35)
 	for _,plr in pairs(Players:GetPlayers()) do
 		if plr ~= player and plr.Character then
 			if espOn then
@@ -214,13 +223,12 @@ espToggle.MouseButton1Click:Connect(function()
 	end
 end)
 
--- INFINITE YIELD
 iyBtn.MouseButton1Click:Connect(function()
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
 
 --------------------------------------------------
--- FLOATING TOGGLE BUTTON
+-- FLOATING BUTTON
 --------------------------------------------------
 local toggleGui = Instance.new("ScreenGui", player.PlayerGui)
 toggleGui.Name = "HamudiUniversalToggle"
@@ -228,7 +236,7 @@ toggleGui.Name = "HamudiUniversalToggle"
 local toggleBtn = Instance.new("TextButton", toggleGui)
 toggleBtn.Size = UDim2.fromOffset(52,52)
 toggleBtn.Position = UDim2.fromScale(0.05,0.6)
-toggleBtn.Text = "☰"
+toggleBtn.Text = "H"
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextSize = 22
 toggleBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
