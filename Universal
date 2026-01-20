@@ -1,20 +1,13 @@
--- SERVICES
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
---------------------------------------------------
--- CLEANUP
---------------------------------------------------
 pcall(function()
 	player.PlayerGui:FindFirstChild("HamudiUniversalGUI"):Destroy()
 	player.PlayerGui:FindFirstChild("HamudiUniversalToggle"):Destroy()
 end)
 
---------------------------------------------------
--- MAIN GUI
---------------------------------------------------
 local gui = Instance.new("ScreenGui")
 gui.Name = "HamudiUniversalGUI"
 gui.ResetOnSpawn = false
@@ -22,16 +15,15 @@ gui.Parent = player.PlayerGui
 
 local main = Instance.new("Frame")
 main.Parent = gui
-main.Size = UDim2.fromOffset(460, 400)
-main.Position = UDim2.fromScale(0.5, 0.5)
-main.AnchorPoint = Vector2.new(0.5, 0.5)
-main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+main.Size = UDim2.fromOffset(460,400)
+main.Position = UDim2.fromScale(0.5,0.5)
+main.AnchorPoint = Vector2.new(0.5,0.5)
+main.BackgroundColor3 = Color3.fromRGB(20,20,20)
 main.Active = true
 main.Draggable = true
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,18)
 Instance.new("UIStroke", main).Color = Color3.fromRGB(90,90,90)
 
--- TOP BAR
 local topBar = Instance.new("Frame", main)
 topBar.Size = UDim2.new(1,0,0,50)
 topBar.BackgroundColor3 = Color3.fromRGB(26,26,26)
@@ -57,9 +49,6 @@ closeBtn.BackgroundColor3 = Color3.fromRGB(170,60,60)
 closeBtn.TextColor3 = Color3.new(1,1,1)
 Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1,0)
 
---------------------------------------------------
--- SCROLLABLE CONTENT
---------------------------------------------------
 local scroll = Instance.new("ScrollingFrame", main)
 scroll.Position = UDim2.new(0,0,0,54)
 scroll.Size = UDim2.new(1,0,1,-54)
@@ -69,15 +58,11 @@ scroll.BackgroundTransparency = 1
 
 local layout = Instance.new("UIListLayout", scroll)
 layout.Padding = UDim.new(0,12)
-
 local padding = Instance.new("UIPadding", scroll)
 padding.PaddingTop = UDim.new(0,12)
 padding.PaddingLeft = UDim.new(0,12)
 padding.PaddingRight = UDim.new(0,12)
 
---------------------------------------------------
--- UI HELPERS
---------------------------------------------------
 local function createToggle(text)
 	local btn = Instance.new("TextButton", scroll)
 	btn.Size = UDim2.new(1,0,0,44)
@@ -92,7 +77,7 @@ local function createToggle(text)
 	return btn
 end
 
-local function createSlider(label, min,max,default)
+local function createSlider(label,min,max,default)
 	local holder = Instance.new("Frame", scroll)
 	holder.Size = UDim2.new(1,0,0,60)
 	holder.BackgroundTransparency = 1
@@ -122,34 +107,28 @@ local function createSlider(label, min,max,default)
 	local dragging = false
 
 	bar.InputBegan:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = true end
 	end)
 
 	bar.InputEnded:Connect(function(i)
-		if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+		if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then dragging = false end
 	end)
 
 	UIS.InputChanged:Connect(function(i)
-		if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+		if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
 			local pct = math.clamp((i.Position.X - bar.AbsolutePosition.X)/bar.AbsoluteSize.X,0,1)
 			fill.Size = UDim2.new(pct,0,1,0)
 			value = math.floor(min + (max-min)*pct)
 			text.Text = label..": "..value
 		end
 	end)
-
 	return function() return value end
 end
 
---------------------------------------------------
--- TOGGLES + SLIDERS
---------------------------------------------------
 local speedToggle = createToggle("Speed Boost")
 local getSpeed = createSlider("Speed",16,100,16)
-
 local jumpToggle = createToggle("Jump Boost")
 local getJump = createSlider("Jump",50,150,50)
-
 local infJumpToggle = createToggle("Infinite Jump")
 local espToggle = createToggle("ESP (Red)")
 local iyBtn = Instance.new("TextButton", scroll)
@@ -165,19 +144,14 @@ Instance.new("UIStroke", iyBtn).Color = Color3.fromRGB(70,70,70)
 local speedOn,jumpOn,infJumpOn,espOn = false,false,false,false
 local espObjs = {}
 
---------------------------------------------------
--- LOGIC
---------------------------------------------------
-local function applySpeedJump()
+RunService.Heartbeat:Connect(function()
 	local char = player.Character
 	local hum = char and char:FindFirstChildOfClass("Humanoid")
 	if hum then
 		hum.WalkSpeed = speedOn and getSpeed() or 16
 		hum.JumpPower = jumpOn and getJump() or 50
 	end
-end
-
-RunService.RenderStepped:Connect(applySpeedJump)
+end)
 
 speedToggle.MouseButton1Click:Connect(function()
 	speedOn = not speedOn
@@ -227,12 +201,8 @@ iyBtn.MouseButton1Click:Connect(function()
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
 
---------------------------------------------------
--- FLOATING BUTTON
---------------------------------------------------
 local toggleGui = Instance.new("ScreenGui", player.PlayerGui)
 toggleGui.Name = "HamudiUniversalToggle"
-
 local toggleBtn = Instance.new("TextButton", toggleGui)
 toggleBtn.Size = UDim2.fromOffset(52,52)
 toggleBtn.Position = UDim2.fromScale(0.05,0.6)
