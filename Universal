@@ -1,0 +1,186 @@
+-- SERVICES
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local VirtualUser = game:GetService("VirtualUser")
+
+local player = Players.LocalPlayer
+
+--------------------------------------------------
+-- GUI SETUP
+--------------------------------------------------
+local gui = Instance.new("ScreenGui", player.PlayerGui)
+gui.Name = "HamudiUniversal"
+gui.ResetOnSpawn = false
+
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.fromOffset(330, 360)
+main.Position = UDim2.fromScale(0.5, 0.5)
+main.AnchorPoint = Vector2.new(0.5, 0.5)
+main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+main.Active = true
+main.Draggable = true
+
+Instance.new("UICorner", main).CornerRadius = UDim.new(0,20)
+Instance.new("UIStroke", main).Color = Color3.fromRGB(90,90,90)
+
+local layout = Instance.new("UIListLayout", main)
+layout.Padding = UDim.new(0,10)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+--------------------------------------------------
+-- TITLE
+--------------------------------------------------
+local title = Instance.new("TextLabel", main)
+title.Size = UDim2.new(1,0,0,40)
+title.BackgroundTransparency = 1
+title.Text = "🌐 Hamudi Universal"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 22
+title.TextColor3 = Color3.fromRGB(255,255,255)
+
+--------------------------------------------------
+-- BUTTON FACTORY
+--------------------------------------------------
+local function makeButton(text)
+	local b = Instance.new("TextButton", main)
+	b.Size = UDim2.new(1,-20,0,42)
+	b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+	b.TextColor3 = Color3.fromRGB(255,255,255)
+	b.Font = Enum.Font.Gotham
+	b.TextSize = 14
+	b.Text = text
+	b.AutoButtonColor = false
+	Instance.new("UICorner", b).CornerRadius = UDim.new(0,14)
+	return b
+end
+
+local function toggle(btn, state, on, off)
+	btn.Text = state and on or off
+	btn.BackgroundColor3 = state and Color3.fromRGB(45,120,60) or Color3.fromRGB(35,35,35)
+end
+
+--------------------------------------------------
+-- BUTTONS
+--------------------------------------------------
+local speedBtn = makeButton("WalkSpeed: OFF")
+local jumpBtn  = makeButton("JumpPower: OFF")
+local infJumpBtn = makeButton("Infinite Jump: OFF")
+local espBtn = makeButton("ESP (Players): OFF")
+local afkBtn = makeButton("Anti AFK: OFF")
+local iyBtn = makeButton("Load Infinite Yield")
+
+--------------------------------------------------
+-- STATES
+--------------------------------------------------
+local speedOn, jumpOn, infJumpOn, espOn, afkOn = false, false, false, false, false
+local ESP_CACHE = {}
+
+--------------------------------------------------
+-- WALKSPEED
+--------------------------------------------------
+speedBtn.MouseButton1Click:Connect(function()
+	speedOn = not speedOn
+	toggle(speedBtn, speedOn, "WalkSpeed: ON", "WalkSpeed: OFF")
+end)
+
+RunService.RenderStepped:Connect(function()
+	if speedOn and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.WalkSpeed = 50
+	end
+end)
+
+--------------------------------------------------
+-- JUMPPOWER
+--------------------------------------------------
+jumpBtn.MouseButton1Click:Connect(function()
+	jumpOn = not jumpOn
+	toggle(jumpBtn, jumpOn, "JumpPower: ON", "JumpPower: OFF")
+end)
+
+RunService.RenderStepped:Connect(function()
+	if jumpOn and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.JumpPower = 100
+	end
+end)
+
+--------------------------------------------------
+-- INFINITE JUMP
+--------------------------------------------------
+UserInputService.JumpRequest:Connect(function()
+	if infJumpOn and player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+	end
+end)
+
+infJumpBtn.MouseButton1Click:Connect(function()
+	infJumpOn = not infJumpOn
+	toggle(infJumpBtn, infJumpOn, "Infinite Jump: ON", "Infinite Jump: OFF")
+end)
+
+--------------------------------------------------
+-- ESP (HIGHLIGHT / CHAMS)
+--------------------------------------------------
+local function addESP(plr)
+	if plr == player then return end
+	if ESP_CACHE[plr] then return end
+
+	local function apply(char)
+		local h = Instance.new("Highlight")
+		h.FillColor = Color3.fromRGB(255,0,0)
+		h.OutlineColor = Color3.fromRGB(255,255,255)
+		h.FillTransparency = 0.4
+		h.Parent = char
+		ESP_CACHE[plr] = h
+	end
+
+	if plr.Character then apply(plr.Character) end
+	plr.CharacterAdded:Connect(apply)
+end
+
+local function removeESP()
+	for _, h in pairs(ESP_CACHE) do
+		if h then h:Destroy() end
+	end
+	ESP_CACHE = {}
+end
+
+espBtn.MouseButton1Click:Connect(function()
+	espOn = not espOn
+	toggle(espBtn, espOn, "ESP (Players): ON", "ESP (Players): OFF")
+
+	if espOn then
+		for _, plr in pairs(Players:GetPlayers()) do
+			addESP(plr)
+		end
+	else
+		removeESP()
+	end
+end)
+
+Players.PlayerAdded:Connect(function(plr)
+	if espOn then addESP(plr) end
+end)
+
+--------------------------------------------------
+-- ANTI AFK
+--------------------------------------------------
+afkBtn.MouseButton1Click:Connect(function()
+	afkOn = not afkOn
+	toggle(afkBtn, afkOn, "Anti AFK: ON", "Anti AFK: OFF")
+end)
+
+player.Idled:Connect(function()
+	if afkOn then
+		VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+		task.wait(1)
+		VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
+	end
+end)
+
+--------------------------------------------------
+-- INFINITE YIELD LOADER
+--------------------------------------------------
+iyBtn.MouseButton1Click:Connect(function()
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+end)
