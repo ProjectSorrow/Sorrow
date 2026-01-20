@@ -1,186 +1,132 @@
 -- SERVICES
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local VirtualUser = game:GetService("VirtualUser")
-
 local player = Players.LocalPlayer
 
 --------------------------------------------------
--- GUI SETUP
+-- CLEANUP
 --------------------------------------------------
-local gui = Instance.new("ScreenGui", player.PlayerGui)
-gui.Name = "HamudiUniversal"
-gui.ResetOnSpawn = false
+pcall(function()
+	player.PlayerGui:FindFirstChild("HamudiUniversalGUI"):Destroy()
+	player.PlayerGui:FindFirstChild("HamudiUniversalToggle"):Destroy()
+end)
 
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.fromOffset(330, 360)
+--------------------------------------------------
+-- MAIN GUI
+--------------------------------------------------
+local gui = Instance.new("ScreenGui")
+gui.Name = "HamudiUniversalGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player.PlayerGui
+
+local main = Instance.new("Frame")
+main.Parent = gui
+main.Size = UDim2.fromOffset(420, 260)
 main.Position = UDim2.fromScale(0.5, 0.5)
 main.AnchorPoint = Vector2.new(0.5, 0.5)
-main.BackgroundColor3 = Color3.fromRGB(18,18,18)
+main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 main.Active = true
 main.Draggable = true
 
-Instance.new("UICorner", main).CornerRadius = UDim.new(0,20)
-Instance.new("UIStroke", main).Color = Color3.fromRGB(90,90,90)
-
-local layout = Instance.new("UIListLayout", main)
-layout.Padding = UDim.new(0,10)
-layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 18)
+Instance.new("UIStroke", main).Color = Color3.fromRGB(90, 90, 90)
 
 --------------------------------------------------
--- TITLE
+-- TOP BAR (BIG DRAG AREA)
 --------------------------------------------------
-local title = Instance.new("TextLabel", main)
-title.Size = UDim2.new(1,0,0,40)
+local topBar = Instance.new("Frame")
+topBar.Parent = main
+topBar.Size = UDim2.new(1, 0, 0, 48)
+topBar.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+
+Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 18)
+
+local title = Instance.new("TextLabel")
+title.Parent = topBar
+title.Size = UDim2.new(1, -60, 1, 0)
+title.Position = UDim2.new(0, 14, 0, 0)
 title.BackgroundTransparency = 1
 title.Text = "🌐 Hamudi Universal"
 title.Font = Enum.Font.GothamBold
-title.TextSize = 22
-title.TextColor3 = Color3.fromRGB(255,255,255)
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextXAlignment = Left
 
 --------------------------------------------------
--- BUTTON FACTORY
+-- CLOSE BUTTON
 --------------------------------------------------
-local function makeButton(text)
-	local b = Instance.new("TextButton", main)
-	b.Size = UDim2.new(1,-20,0,42)
-	b.BackgroundColor3 = Color3.fromRGB(35,35,35)
-	b.TextColor3 = Color3.fromRGB(255,255,255)
-	b.Font = Enum.Font.Gotham
-	b.TextSize = 14
-	b.Text = text
-	b.AutoButtonColor = false
-	Instance.new("UICorner", b).CornerRadius = UDim.new(0,14)
-	return b
-end
+local closeBtn = Instance.new("TextButton")
+closeBtn.Parent = topBar
+closeBtn.Size = UDim2.fromOffset(36, 36)
+closeBtn.Position = UDim2.new(1, -44, 0.5, -18)
+closeBtn.Text = "✕"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 18
+closeBtn.BackgroundColor3 = Color3.fromRGB(170, 60, 60)
+closeBtn.TextColor3 = Color3.new(1,1,1)
 
-local function toggle(btn, state, on, off)
-	btn.Text = state and on or off
-	btn.BackgroundColor3 = state and Color3.fromRGB(45,120,60) or Color3.fromRGB(35,35,35)
-end
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
 
 --------------------------------------------------
--- BUTTONS
+-- CONTENT
 --------------------------------------------------
-local speedBtn = makeButton("WalkSpeed: OFF")
-local jumpBtn  = makeButton("JumpPower: OFF")
-local infJumpBtn = makeButton("Infinite Jump: OFF")
-local espBtn = makeButton("ESP (Players): OFF")
-local afkBtn = makeButton("Anti AFK: OFF")
-local iyBtn = makeButton("Load Infinite Yield")
+local content = Instance.new("Frame")
+content.Parent = main
+content.Position = UDim2.new(0, 0, 0, 56)
+content.Size = UDim2.new(1, 0, 1, -56)
+content.BackgroundTransparency = 1
+
+local info = Instance.new("TextLabel")
+info.Parent = content
+info.Size = UDim2.new(1, -20, 1, -20)
+info.Position = UDim2.new(0, 10, 0, 10)
+info.BackgroundTransparency = 1
+info.TextWrapped = true
+info.TextYAlignment = Top
+info.TextXAlignment = Left
+info.Text = [[
+Welcome to Hamudi's Universal Script Hub.
+
+✔ ESP
+✔ Admin / Utility
+✔ Universal tools
+✔ More coming soon...
+
+Use the toggle button to reopen the GUI anytime.
+]]
+info.Font = Enum.Font.Gotham
+info.TextSize = 15
+info.TextColor3 = Color3.fromRGB(220, 220, 220)
 
 --------------------------------------------------
--- STATES
+-- FLOATING TOGGLE BUTTON
 --------------------------------------------------
-local speedOn, jumpOn, infJumpOn, espOn, afkOn = false, false, false, false, false
-local ESP_CACHE = {}
+local toggleGui = Instance.new("ScreenGui")
+toggleGui.Name = "HamudiUniversalToggle"
+toggleGui.ResetOnSpawn = false
+toggleGui.Parent = player.PlayerGui
+
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Parent = toggleGui
+toggleBtn.Size = UDim2.fromOffset(52, 52)
+toggleBtn.Position = UDim2.fromScale(0.05, 0.6)
+toggleBtn.Text = "☰"
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextSize = 22
+toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleBtn.TextColor3 = Color3.new(1,1,1)
+toggleBtn.Active = true
+toggleBtn.Draggable = true
+
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", toggleBtn).Color = Color3.fromRGB(90, 90, 90)
 
 --------------------------------------------------
--- WALKSPEED
+-- BUTTON LOGIC
 --------------------------------------------------
-speedBtn.MouseButton1Click:Connect(function()
-	speedOn = not speedOn
-	toggle(speedBtn, speedOn, "WalkSpeed: ON", "WalkSpeed: OFF")
+closeBtn.MouseButton1Click:Connect(function()
+	main.Visible = false
 end)
 
-RunService.RenderStepped:Connect(function()
-	if speedOn and player.Character and player.Character:FindFirstChild("Humanoid") then
-		player.Character.Humanoid.WalkSpeed = 50
-	end
-end)
-
---------------------------------------------------
--- JUMPPOWER
---------------------------------------------------
-jumpBtn.MouseButton1Click:Connect(function()
-	jumpOn = not jumpOn
-	toggle(jumpBtn, jumpOn, "JumpPower: ON", "JumpPower: OFF")
-end)
-
-RunService.RenderStepped:Connect(function()
-	if jumpOn and player.Character and player.Character:FindFirstChild("Humanoid") then
-		player.Character.Humanoid.JumpPower = 100
-	end
-end)
-
---------------------------------------------------
--- INFINITE JUMP
---------------------------------------------------
-UserInputService.JumpRequest:Connect(function()
-	if infJumpOn and player.Character and player.Character:FindFirstChild("Humanoid") then
-		player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-	end
-end)
-
-infJumpBtn.MouseButton1Click:Connect(function()
-	infJumpOn = not infJumpOn
-	toggle(infJumpBtn, infJumpOn, "Infinite Jump: ON", "Infinite Jump: OFF")
-end)
-
---------------------------------------------------
--- ESP (HIGHLIGHT / CHAMS)
---------------------------------------------------
-local function addESP(plr)
-	if plr == player then return end
-	if ESP_CACHE[plr] then return end
-
-	local function apply(char)
-		local h = Instance.new("Highlight")
-		h.FillColor = Color3.fromRGB(255,0,0)
-		h.OutlineColor = Color3.fromRGB(255,255,255)
-		h.FillTransparency = 0.4
-		h.Parent = char
-		ESP_CACHE[plr] = h
-	end
-
-	if plr.Character then apply(plr.Character) end
-	plr.CharacterAdded:Connect(apply)
-end
-
-local function removeESP()
-	for _, h in pairs(ESP_CACHE) do
-		if h then h:Destroy() end
-	end
-	ESP_CACHE = {}
-end
-
-espBtn.MouseButton1Click:Connect(function()
-	espOn = not espOn
-	toggle(espBtn, espOn, "ESP (Players): ON", "ESP (Players): OFF")
-
-	if espOn then
-		for _, plr in pairs(Players:GetPlayers()) do
-			addESP(plr)
-		end
-	else
-		removeESP()
-	end
-end)
-
-Players.PlayerAdded:Connect(function(plr)
-	if espOn then addESP(plr) end
-end)
-
---------------------------------------------------
--- ANTI AFK
---------------------------------------------------
-afkBtn.MouseButton1Click:Connect(function()
-	afkOn = not afkOn
-	toggle(afkBtn, afkOn, "Anti AFK: ON", "Anti AFK: OFF")
-end)
-
-player.Idled:Connect(function()
-	if afkOn then
-		VirtualUser:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-		task.wait(1)
-		VirtualUser:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame)
-	end
-end)
-
---------------------------------------------------
--- INFINITE YIELD LOADER
---------------------------------------------------
-iyBtn.MouseButton1Click:Connect(function()
-	loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
+toggleBtn.MouseButton1Click:Connect(function()
+	main.Visible = not main.Visible
 end)
