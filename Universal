@@ -1,5 +1,8 @@
 -- SERVICES
 local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
 local player = Players.LocalPlayer
 
 --------------------------------------------------
@@ -20,7 +23,7 @@ gui.Parent = player.PlayerGui
 
 local main = Instance.new("Frame")
 main.Parent = gui
-main.Size = UDim2.fromOffset(420, 320)
+main.Size = UDim2.fromOffset(460, 380)
 main.Position = UDim2.fromScale(0.5, 0.5)
 main.AnchorPoint = Vector2.new(0.5, 0.5)
 main.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
@@ -31,31 +34,25 @@ Instance.new("UICorner", main).CornerRadius = UDim.new(0, 18)
 Instance.new("UIStroke", main).Color = Color3.fromRGB(90, 90, 90)
 
 --------------------------------------------------
--- TOP BAR (DRAG AREA)
+-- TOP BAR
 --------------------------------------------------
-local topBar = Instance.new("Frame")
-topBar.Parent = main
+local topBar = Instance.new("Frame", main)
 topBar.Size = UDim2.new(1, 0, 0, 50)
 topBar.BackgroundColor3 = Color3.fromRGB(26, 26, 26)
 
 Instance.new("UICorner", topBar).CornerRadius = UDim.new(0, 18)
 
-local title = Instance.new("TextLabel")
-title.Parent = topBar
+local title = Instance.new("TextLabel", topBar)
 title.Size = UDim2.new(1, -60, 1, 0)
 title.Position = UDim2.new(0, 14, 0, 0)
 title.BackgroundTransparency = 1
 title.Text = "🌐 Hamudi Universal"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 20
-title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextColor3 = Color3.new(1,1,1)
 title.TextXAlignment = Enum.TextXAlignment.Left
 
---------------------------------------------------
--- CLOSE BUTTON
---------------------------------------------------
-local closeBtn = Instance.new("TextButton")
-closeBtn.Parent = topBar
+local closeBtn = Instance.new("TextButton", topBar)
 closeBtn.Size = UDim2.fromOffset(36, 36)
 closeBtn.Position = UDim2.new(1, -44, 0.5, -18)
 closeBtn.Text = "✕"
@@ -63,20 +60,18 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 18
 closeBtn.BackgroundColor3 = Color3.fromRGB(170, 60, 60)
 closeBtn.TextColor3 = Color3.new(1,1,1)
-
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1, 0)
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(1,0)
 
 --------------------------------------------------
--- SCROLLING CONTENT
+-- SCROLL AREA
 --------------------------------------------------
-local scroll = Instance.new("ScrollingFrame")
-scroll.Parent = main
+local scroll = Instance.new("ScrollingFrame", main)
 scroll.Position = UDim2.new(0, 0, 0, 54)
 scroll.Size = UDim2.new(1, 0, 1, -54)
-scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.CanvasSize = UDim2.new()
 scroll.ScrollBarImageTransparency = 0.3
 scroll.BackgroundTransparency = 1
-scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
 local padding = Instance.new("UIPadding", scroll)
 padding.PaddingTop = UDim.new(0, 12)
@@ -84,21 +79,20 @@ padding.PaddingLeft = UDim.new(0, 12)
 padding.PaddingRight = UDim.new(0, 12)
 
 local layout = Instance.new("UIListLayout", scroll)
-layout.Padding = UDim.new(0, 10)
+layout.Padding = UDim.new(0, 12)
 
 --------------------------------------------------
--- BUTTON FACTORY
+-- UI HELPERS
 --------------------------------------------------
-local function createButton(text)
-	local btn = Instance.new("TextButton")
+local function createToggle(text)
+	local btn = Instance.new("TextButton", scroll)
 	btn.Size = UDim2.new(1, 0, 0, 44)
 	btn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-	btn.TextColor3 = Color3.new(1,1,1)
+	btn.Text = text .. ": OFF"
 	btn.Font = Enum.Font.Gotham
 	btn.TextSize = 15
-	btn.Text = text
+	btn.TextColor3 = Color3.new(1,1,1)
 	btn.AutoButtonColor = false
-	btn.Parent = scroll
 
 	Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 14)
 	Instance.new("UIStroke", btn).Color = Color3.fromRGB(70, 70, 70)
@@ -106,74 +100,146 @@ local function createButton(text)
 	return btn
 end
 
---------------------------------------------------
--- UNIVERSAL BUTTONS
---------------------------------------------------
-local espBtn = createButton("Player ESP (Red Highlight)")
-local iyBtn  = createButton("Infinite Yield")
-local infoBtn = createButton("More coming soon...")
+local function createSlider(label, min, max, default)
+	local holder = Instance.new("Frame", scroll)
+	holder.Size = UDim2.new(1, 0, 0, 60)
+	holder.BackgroundTransparency = 1
+
+	local text = Instance.new("TextLabel", holder)
+	text.Size = UDim2.new(1, 0, 0, 20)
+	text.BackgroundTransparency = 1
+	text.Text = label .. ": " .. default
+	text.Font = Enum.Font.Gotham
+	text.TextSize = 14
+	text.TextColor3 = Color3.new(1,1,1)
+	text.TextXAlignment = Left
+
+	local bar = Instance.new("Frame", holder)
+	bar.Position = UDim2.new(0, 0, 0, 30)
+	bar.Size = UDim2.new(1, 0, 0, 10)
+	bar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+	Instance.new("UICorner", bar).CornerRadius = UDim.new(1,0)
+
+	local fill = Instance.new("Frame", bar)
+	fill.Size = UDim2.new((default-min)/(max-min), 0, 1, 0)
+	fill.BackgroundColor3 = Color3.fromRGB(80, 160, 90)
+	Instance.new("UICorner", fill).CornerRadius = UDim.new(1,0)
+
+	local value = default
+	local dragging = false
+
+	bar.InputBegan:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true end
+	end)
+
+	bar.InputEnded:Connect(function(i)
+		if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
+	end)
+
+	UIS.InputChanged:Connect(function(i)
+		if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
+			local pct = math.clamp((i.Position.X - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+			fill.Size = UDim2.new(pct,0,1,0)
+			value = math.floor(min + (max-min) * pct)
+			text.Text = label .. ": " .. value
+		end
+	end)
+
+	return function() return value end
+end
 
 --------------------------------------------------
--- BUTTON LOGIC
+-- TOGGLES & SLIDERS
 --------------------------------------------------
+local speedToggle = createToggle("Speed Boost")
+local getSpeed = createSlider("Speed", 16, 100, 16)
 
--- SIMPLE ESP (RED HIGHLIGHT)
-local espOn = false
-local highlights = {}
+local jumpToggle = createToggle("Jump Boost")
+local getJump = createSlider("Jump", 50, 150, 50)
 
-espBtn.MouseButton1Click:Connect(function()
+local infJumpToggle = createToggle("Infinite Jump")
+local espToggle = createToggle("ESP (Red)")
+local iyBtn = createToggle("Infinite Yield")
+
+--------------------------------------------------
+-- LOGIC
+--------------------------------------------------
+local speedOn, jumpOn, infJumpOn, espOn = false,false,false,false
+local espObjects = {}
+
+local function updateChar()
+	local char = player.Character
+	local hum = char and char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.WalkSpeed = speedOn and getSpeed() or 16
+		hum.JumpPower = jumpOn and getJump() or 50
+	end
+end
+
+RunService.RenderStepped:Connect(updateChar)
+
+speedToggle.MouseButton1Click:Connect(function()
+	speedOn = not speedOn
+	speedToggle.Text = "Speed Boost: " .. (speedOn and "ON" or "OFF")
+end)
+
+jumpToggle.MouseButton1Click:Connect(function()
+	jumpOn = not jumpOn
+	jumpToggle.Text = "Jump Boost: " .. (jumpOn and "ON" or "OFF")
+end)
+
+infJumpToggle.MouseButton1Click:Connect(function()
+	infJumpOn = not infJumpOn
+	infJumpToggle.Text = "Infinite Jump: " .. (infJumpOn and "ON" or "OFF")
+end)
+
+UIS.JumpRequest:Connect(function()
+	if infJumpOn then
+		local hum = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+		if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
+	end
+end)
+
+espToggle.MouseButton1Click:Connect(function()
 	espOn = not espOn
-	espBtn.Text = espOn and "Player ESP: ON" or "Player ESP (Red Highlight)"
+	espToggle.Text = "ESP (Red): " .. (espOn and "ON" or "OFF")
 
-	for _,plr in pairs(Players:GetPlayers()) do
+	for _,plr in ipairs(Players:GetPlayers()) do
 		if plr ~= player and plr.Character then
 			if espOn then
-				local h = Instance.new("Highlight")
-				h.FillColor = Color3.fromRGB(255, 0, 0)
-				h.OutlineColor = Color3.new(1,1,1)
-				h.Parent = plr.Character
-				highlights[plr] = h
-			else
-				if highlights[plr] then
-					highlights[plr]:Destroy()
-					highlights[plr] = nil
-				end
+				local h = Instance.new("Highlight", plr.Character)
+				h.FillColor = Color3.fromRGB(255,0,0)
+				espObjects[plr] = h
+			elseif espObjects[plr] then
+				espObjects[plr]:Destroy()
+				espObjects[plr] = nil
 			end
 		end
 	end
 end)
 
--- INFINITE YIELD
 iyBtn.MouseButton1Click:Connect(function()
 	loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()
 end)
 
 --------------------------------------------------
--- FLOATING TOGGLE BUTTON
+-- TOGGLE BUTTON
 --------------------------------------------------
-local toggleGui = Instance.new("ScreenGui")
+local toggleGui = Instance.new("ScreenGui", player.PlayerGui)
 toggleGui.Name = "HamudiUniversalToggle"
-toggleGui.ResetOnSpawn = false
-toggleGui.Parent = player.PlayerGui
 
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Parent = toggleGui
-toggleBtn.Size = UDim2.fromOffset(52, 52)
-toggleBtn.Position = UDim2.fromScale(0.05, 0.6)
+local toggleBtn = Instance.new("TextButton", toggleGui)
+toggleBtn.Size = UDim2.fromOffset(52,52)
+toggleBtn.Position = UDim2.fromScale(0.05,0.6)
 toggleBtn.Text = "☰"
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextSize = 22
-toggleBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
 toggleBtn.TextColor3 = Color3.new(1,1,1)
 toggleBtn.Active = true
 toggleBtn.Draggable = true
+Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1,0)
 
-Instance.new("UICorner", toggleBtn).CornerRadius = UDim.new(1, 0)
-Instance.new("UIStroke", toggleBtn).Color = Color3.fromRGB(90, 90, 90)
-
---------------------------------------------------
--- TOGGLE LOGIC
---------------------------------------------------
 closeBtn.MouseButton1Click:Connect(function()
 	main.Visible = false
 end)
