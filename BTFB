@@ -6,7 +6,7 @@ local VirtualUser = game:GetService("VirtualUser")
 local player = Players.LocalPlayer
 
 -- TARGET
-local targetModel = workspace:WaitForChild("WinsButtons"):WaitForChild("2500")
+local targetModel = workspace:WaitForChild("WinsButtons"):WaitForChild("3500")
 
 --------------------------------------------------
 -- MAIN GUI
